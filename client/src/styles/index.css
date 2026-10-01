@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* Lichen-paper palette: green-grey paper, deep green ink, moss for action, ochre only as a highlighter. */
+@theme {
+  --color-paper: #eceFe6;
+  --color-ink: #1e2b26;
+  --color-moss: #4a6440;
+  --color-ochre: #d9a93b;
+  --color-stone: #5a635b;
+  --color-rule: #c9cfc1;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Programmatic focus targets (the welcome heading, <main> after the skip link) aren't controls: no ring. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-moss);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-moss);
+  outline-offset: 2px;
+}
+
+/* Motion only where it helps orientation: a dialog rises in. Nothing animates for people who ask for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  dialog[open] {
+    animation: dialog-in 160ms ease-out;
+  }
+  @keyframes dialog-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+}

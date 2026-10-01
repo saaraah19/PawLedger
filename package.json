@@ -1,0 +1,23 @@
+{
+  "name": "pawledger",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "doctor": "npm run doctor -w server",
+    "dev": "concurrently -n server,client \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w server && npm run build -w client",
+    "start": "npm start -w server",
+    "close-registration": "node scripts/close-registration.mjs",
+    "test": "node --test scripts/setup.test.mjs && npm run test -w server && npm run test -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

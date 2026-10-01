@@ -1,0 +1,23 @@
+# Render Blueprint: one web service that serves both the API and the built app.
+# Dashboard: New > Blueprint > pick this repository. You will be asked for MONGODB_URI only.
+services:
+  - type: web
+    name: pawledger
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: SERVE_CLIENT
+        value: "true"
+      - key: ALLOW_REGISTRATION
+        value: "true" # set to "false" after you have created your account
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
