@@ -21,6 +21,15 @@ npm run close-registration   # once your account exists
 
 On first sign-in a five-step welcome flow runs by itself (and can be replayed from Settings): currency and timezone, optional starter categories, a choice between recording a real entry or loading about 70 clearly marked example entries, and a tour of each page. Example data is tagged **Example** wherever it appears, only loads before you have entries of your own, and removes cleanly (anything you edited or built on stays).
 
+## The monthly rhythm: expectations and inventory
+
+- **Plan** (start of the month): what you expect to spend, in total and optionally by category, plus optional expected income and saving. Home and Plan show spending against it, with how far through the month you are. Expectations are never enforced and never scored.
+- **Inventory** (end of the month or the 1st): count what you hold in each account (cash, bank, savings, other). From the second count on, the change in what you hold, minus what your recorded income and spending explain, is shown as **Unaccounted for**, in plain words and in both directions. Savings accounts show balance, optional target, recent monthly average and, if the pace is positive, the arithmetic of reaching the target.
+- An inventory is filed under the month that is starting: counted on the 1st to the 16th is that month, from the 17th the next. An entry dated on a counting day belongs to the period that ends that day. Moves between your own accounts change nothing in the total.
+- Home reminds you during the last five days of a month and the first week of the next, until it is done.
+
+Details and a worked example are in GETTING-STARTED.md, under "Your monthly rhythm".
+
 ## Commands
 
 | Command | What it does |
@@ -113,6 +122,8 @@ Observations on the dashboard come from fixed rules in `server/src/services/anal
 | Largest purchases | The 3 largest purchases are at least 40% of spending, with at least 6 purchases |
 | Spending types | Necessities and optional purchases both exist and at least 60% of spending has a type |
 | Busiest category | The top categorised area took at least 2 purchases |
+| Plan (spending) | You set expectations for the month: always shown, with how far through the month you are |
+| Plan (category) | A planned category has passed what you expected of it (the furthest one is named) |
 
 While a month is still running it is compared with the **same days of last month**, never with a finished month. The wording reports what the data shows; it never advises, blames or praises. All thresholds are in one `RULES` object.
 
@@ -136,6 +147,21 @@ POST   /api/settings/onboarded
 GET    /api/demo                       (example data status)
 POST   /api/demo                       (load example data; only before you have entries of your own)
 DELETE /api/demo                       (remove example data; edited entries and categories in use stay)
+GET    /api/accounts                   (each includes `usage`: inventories that count it)
+POST   /api/accounts                   { name, kind: cash|bank|savings|other, target? (savings only) }
+PUT    /api/accounts/:id
+PATCH  /api/accounts/:id/archive       { archived: boolean }
+DELETE /api/accounts/:id               (409 once an inventory has counted it: archive instead)
+
+GET    /api/inventories/overview       (accounts, inventories, periods between counts, savings, reminder)
+GET    /api/inventories/prompt
+POST   /api/inventories                { asOf: YYYY-MM-DD, balances: [{ accountId, amount }], notes? }
+PUT    /api/inventories/:id
+DELETE /api/inventories/:id
+
+GET    /api/plans?month=YYYY-MM        (the plan, set against what happened, and the last twelve months)
+PUT    /api/plans/:month               { expectedSpending, expectedIncome?, expectedSaving?, categories?, notes? }
+DELETE /api/plans/:month
 PUT    /api/settings                  { currency, timezone }
 
 GET    /api/categories                (each includes `usage`, its transaction count)

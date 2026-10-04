@@ -232,8 +232,16 @@ Do this with the example data loaded. Tick each one off.
 
    ![Compare](docs/screenshots/08-compare.png)
 
-7. **Settings.** See the currency warning (label only). Find **Example data**.
-8. **Clean up.** Press **Remove example data** (Home or Settings). Your own entries, and anything you edited, stay. Now record your first real expense.
+7. **Plan.** Open **Plan**. The example expects 30,000 DZD of spending this month, with amounts for a few categories. Read how it is going: the dark line marks what was expected, and the grey tick shows how far through the month you are. Press **Edit** to see the form, and try changing an amount.
+
+   ![Plan](docs/screenshots/09-plan.png)
+
+8. **Inventory.** Open **Inventory**. Read **Latest change**: what you counted, what your entries explain, and the **Unaccounted for** figure, in plain words. Then look at **Month by month**, **Savings** and the chart. Press **Take inventory** to see the form (cancel it, or save one for the coming month).
+
+   ![Inventory](docs/screenshots/10-inventory.png)
+
+9. **Settings.** See the currency warning (label only). Find **Example data**.
+10. **Clean up.** Press **Remove example data** (Home or Settings). Your own entries, and anything you edited, stay. Now record your first real expense.
 
 ---
 
@@ -264,6 +272,25 @@ Single service: one address serves both the app and the API, so there are no coo
 ---
 
 **If it worked earlier and fails now,** check your internet connection first, then Atlas → Network Access: an address that has changed is the most common cause (step 3).
+
+### Your monthly rhythm
+
+Two short routines, one at each end of the month. Both are optional; together they turn the app from a diary into a check on your money.
+
+**At the start of the month: set your expectations (about 2 minutes).** Open **Plan** and press **Set expectations**. Say how much you expect to spend, and if you like how much per category, what you expect to earn, and what you expect to put aside. *Start from last month's* copies the previous plan, so you only change what is different. During the month, Home and Plan show spending against it, with how far through the month you are. Nothing is blocked and nothing is scored: it is a line to watch against.
+
+**At the end of the month, or on the 1st: take your inventory (about 5 minutes).** Open **Inventory** and press **Take inventory**. Count what each account holds (cash in the drawer, the bank balance, savings) and enter the amounts. Home reminds you gently during the last five days of a month and the first week of the next, and stops once it is done (or after *Not now*).
+
+*Which month does an inventory belong to?* It is filed under the month that is starting. Counted on the 1st to the 16th, it belongs to that month; counted on the 17th or later, to the next. So counting on 30 September or on 1 October both give "the start of October".
+
+*What the app does with it.* From your second inventory on, it compares each count with the one before. The change in what you hold, minus what your recorded income and spending explain, is **Unaccounted for**. For example: you counted 145,600 DZD, then 156,200 DZD, which is +10,600. Your entries explain +12,900. The gap, −2,300 DZD, is money that left without an entry. That is a number, not a verdict: cash is the usual source, and it shrinks as you record more of it.
+
+*What keeps it accurate:*
+- Count **every** account **every** time. An account left out counts as zero and shows up as a drop.
+- An entry dated on a counting day belongs to the period that ends that day.
+- Moving money between your own accounts (bank to savings) is not spending, so you do not record it. It appears in the counts and changes nothing in the total.
+
+**Savings.** Add a savings account, optionally with a target. Each inventory then shows its balance, progress to the target, how much it changed last time, and its recent monthly average. Only when that average is positive does it add the arithmetic "if the recent pace continued, the target would be reached in about N months". If your plan includes an amount to put aside, Plan compares it with how much your savings actually changed, once the next month's inventory exists.
 
 ---
 
@@ -297,6 +324,9 @@ Start with `npm run doctor`; it names the problem in most cases.
 | "Your session has ended" | Sessions last seven days | Sign in again; nothing is lost. |
 | A page shows "Something went wrong" | An unexpected error | Reload. Nothing you recorded is changed. The server terminal shows the cause. |
 | Amounts changed after switching currency | Currency is only a label | Switch it back; nothing was converted. |
+| Inventory says **"You already took the inventory for the month starting …"** | Only one inventory fits each month, and counting on the 1st to the 16th or from the 17th decides which | Edit the existing one (Inventory → *Your inventories* → Edit), or pick a date on the other side of the 16th if you meant the other month. |
+| **Unaccounted for** looks large | Money moved without an entry, an account was left out of one of the counts, or an entry is dated on the wrong side of a counting day | Check that every account was counted both times, then look at History around the two counting dates. A cash account is the most common source. |
+| The Home reminder to take an inventory has gone | It only appears in the last five days of a month and the first week of the next, and not once that month's inventory exists or after *Not now* | Nothing to fix. Open Inventory whenever you like. |
 | The example-data button is missing or refused | You already have your own entries | By design: example data never mixes with real records. |
 | `Port 4000` or `5173` already in use | Another program has it | Stop it, or change `PORT` in `server/.env`. |
 | On Render you are signed out immediately | Not on the `https://` address, or `SERVE_CLIENT` is not `true` | Use the `https://` address; check the Environment tab. |
@@ -320,6 +350,8 @@ Honest list of what this version does not do:
 
 - **No password reset.** Keep your password safe. (If it is ever lost, your records are still in the database, but there is no built-in way back to them.)
 - **No export** (CSV or otherwise). Use `mongodump` for backups.
+- **Inventory works on totals, not on transactions.** Entries are not tied to an account and moves between accounts are not recorded, so "unaccounted for" describes your total money. Each account's own change is listed, but only as you counted it.
+- **Expectations are not enforced.** Nothing stops or warns you; the app only shows spending against what you expected.
 - **One person per instance,** by design. Accounts are isolated, but there are no shared households.
 - **No recurring entries, budgets, goals, bank sync or notifications.** These were left out on purpose: the app is for observing your money before trying to change it.
 - **Dates in the date picker** follow your browser's own format; everything the app writes itself uses the unambiguous `28 Sep 2026`.
@@ -350,6 +382,6 @@ CLAUDE.md  the product philosophy every feature was built against
 
 ## 17. What has and has not been checked
 
-**Checked:** the server typechecks; the app builds; the tests for validation, money, dates, categories, comparisons, observations, example data, single-service serving, and the setup scripts pass. The welcome flow and every page were driven in a real headless browser at phone and desktop widths, against a stand-in for the API.
+**Checked:** the server typechecks; the app builds; the tests for validation, money, dates, categories, comparisons, observations, example data, inventory reconciliation, savings, which month an inventory belongs to, reminders, plans, single-service serving, and the setup scripts pass. The welcome flow and every page were driven in a real headless browser at phone and desktop widths, against a stand-in for the API.
 
-**Not checked in the environment this was built in:** the tests that need a real MongoDB (accounts, transactions, categories, analytics and example data against an actual database), a real Atlas connection, and a real Render deployment. Run `npm test` on your machine, and treat step 4's `npm run doctor` as your first real check of the database link.
+**Not checked in the environment this was built in:** the tests that need a real MongoDB (accounts, transactions, categories, analytics, inventories, plans and example data against an actual database), a real Atlas connection, and a real Render deployment. Run `npm test` on your machine, and treat step 4's `npm run doctor` as your first real check of the database link.

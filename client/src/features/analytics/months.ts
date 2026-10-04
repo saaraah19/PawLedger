@@ -46,3 +46,15 @@ export function shortMonthLabel(month: string, showYear: boolean): string {
   const name = shortMonthName(Number(month.slice(5, 7)));
   return showYear ? `${name} \u2019${month.slice(2, 4)}` : name;
 }
+
+/** The last day of "2026-09" as a number (30). */
+export function lastDayOf(month: string): number {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
+/** "2026-09-30": the last day of the month before the one `today` is in. */
+export function endOfLastMonth(today: string): string {
+  const prev = shiftMonth(today.slice(0, 7), -1);
+  return `${prev}-${String(lastDayOf(prev)).padStart(2, "0")}`;
+}

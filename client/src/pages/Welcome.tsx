@@ -22,6 +22,8 @@ const TOUR: { to: string; name: string; question: string; what: string }[] = [
   { to: "/history", name: "History", question: "What exactly did I record?", what: "Every entry, newest first. Filter by income or expenses or by category, sort by amount, and edit or delete anything." },
   { to: "/analyze", name: "Analyze", question: "How has this changed over time?", what: "Income and spending month by month, spending by category and by type, one category over time, and the stores you use most." },
   { to: "/compare", name: "Compare", question: "What is different between two months?", what: "Set any two months (or two date ranges) side by side and see what moved, in plain sentences." },
+  { to: "/plan", name: "Plan", question: "What do I expect of this month, and how is it going?", what: "At the start of a month, say how much you expect to spend, in total and by category. Then watch spending against it, with how far through the month you are." },
+  { to: "/inventory", name: "Inventory", question: "Where is my money, and do my records add up?", what: "Once a month, count what you hold in cash, bank and savings. The app sets the change against what your entries explain, and tracks your savings." },
   { to: "/categories", name: "Categories", question: "How do I want to group my life?", what: "Create, nest, rename and archive categories. Archiving hides one from new entries but keeps your history intact." },
   { to: "/settings", name: "Settings", question: "How should amounts and dates be shown?", what: "Currency and timezone, the example data, and a way back to this tour." },
 ];

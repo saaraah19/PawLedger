@@ -30,7 +30,9 @@ export type Observation =
   | { kind: "category_increase"; categoryId: string; name: string; current: number; previous: number; change: number; changePct: number | null; comparedWith: ComparedWith }
   | { kind: "largest_share"; total: number; expensesTotal: number; share: number }
   | { kind: "spending_types"; necessity: number; optional: number; impulse: number; classifiedShare: number }
-  | { kind: "category_count"; categoryId: string; name: string; count: number; total: number };
+  | { kind: "category_count"; categoryId: string; name: string; count: number; total: number }
+  | { kind: "plan_spending"; expected: number; actual: number; usedShare: number; isCurrent: boolean; elapsedShare: number }
+  | { kind: "plan_category"; categoryId: string; name: string; expected: number; actual: number; usedShare: number };
 
 export type ObservationInput = {
   month: string;
@@ -38,6 +40,9 @@ export type ObservationInput = {
   current: { expenses: Side; largest: { amount: number }[]; categories: CategoryRow[] };
   previous: { expenses: Side; categories: CategoryRow[] };
   spendingTypes: { type: string | null; total: number; count: number }[];
+  /** The month's plan, if one was set: the total expected and what each planned category has actually used. */
+  plan?: { expectedSpending: number; categories: { categoryId: string; name: string; expected: number; actual: number }[] } | null;
+  monthState?: { state: "past" | "current" | "future"; elapsedShare: number };
   months: { month: string; expenses: number }[]; // zero-filled monthly series covering the year so far and the previous 6 months
 };
 
@@ -49,6 +54,14 @@ export function buildObservations(i: ObservationInput): Observation[] {
   const prev = i.previous.expenses;
   if (cur.count < RULES.minExpenses || cur.total <= 0) return [];
   const out: Observation[] = [];
+
+  // 0. Against what you expected of the month, if you set expectations. Always shown when a plan exists: that is what it is for.
+  if (i.plan) {
+    out.push({
+      kind: "plan_spending", expected: i.plan.expectedSpending, actual: cur.total, usedShare: cur.total / i.plan.expectedSpending,
+      isCurrent: i.monthState?.state === "current", elapsedShare: i.monthState?.elapsedShare ?? 1,
+    });
+  }
 
   // 1. Spending against the comparison period (the same days of last month while this month is still running)
   if (prev.total > 0) {
@@ -85,6 +98,10 @@ export function buildObservations(i: ObservationInput): Observation[] {
       out.push({ kind: "category_increase", categoryId: best.categoryId, name: best.name, current: best.b.total, previous: best.a.total, change: best.change, changePct: best.changePct, comparedWith: i.comparedWith });
     }
   }
+
+  // 4b. The planned category furthest past its expectation
+  const over = (i.plan?.categories ?? []).filter((c) => c.expected > 0 && c.actual > c.expected).sort((a, b) => b.actual / b.expected - a.actual / a.expected)[0];
+  if (over) out.push({ kind: "plan_category", categoryId: over.categoryId, name: over.name, expected: over.expected, actual: over.actual, usedShare: over.actual / over.expected });
 
   // 5. How much the three biggest purchases account for
   if (cur.count >= RULES.largestMinCount && i.current.largest.length >= 3) {

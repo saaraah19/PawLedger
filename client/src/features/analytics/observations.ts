@@ -42,6 +42,14 @@ export function describeObservation(o: Observation, ctx: { currency: string; mon
         : `Among purchases with a spending type, necessities were the larger part ${when}: ${money(o.necessity)} against ${money(o.optional)} for optional purchases.${impulse}`;
     }
 
+    case "plan_spending":
+      return o.isCurrent
+        ? `So far you have spent ${money(o.actual)} of the ${money(o.expected)} you expected for this month (${pct(o.usedShare)}), with ${pct(o.elapsedShare)} of the month gone.`
+        : `You expected to spend ${money(o.expected)} in ${monthLabel(ctx.month)} and spent ${money(o.actual)} (${pct(o.usedShare)} of it).`;
+
+    case "plan_category":
+      return `${o.name} has used ${pct(o.usedShare)} of what you expected: ${money(o.actual)} against ${money(o.expected)}.`;
+
     case "category_count":
       return `You made ${o.count} purchases in ${o.name} ${when}, ${money(o.total)} in all.`;
   }

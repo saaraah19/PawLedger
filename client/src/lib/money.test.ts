@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatAmount, formatCompact, formatMoney, formatNet, formatSigned, minorToInput, parseAmount } from "./money";
+import { formatAmount, formatCompact, formatMoney, formatNet, formatSigned, minorToInput, parseAmount, parseBalance } from "./money";
 
 describe("parseAmount", () => {
   it.each([
@@ -61,5 +61,27 @@ describe("digits-only formatters", () => {
     expect(formatSigned(1310000)).toBe("+13,100");
     expect(formatSigned(-350000)).toBe("\u22123,500");
     expect(formatSigned(0)).toBe("0");
+  });
+});
+
+describe("parseBalance", () => {
+  it("accepts zero, positive and negative balances in the same formats as amounts", () => {
+    expect(parseBalance("0")).toBe(0);
+    expect(parseBalance("0.00")).toBe(0);
+    expect(parseBalance("120 000")).toBe(12000000);
+    expect(parseBalance("8,500")).toBe(850000);
+    expect(parseBalance("-1,850")).toBe(-185000);
+    expect(parseBalance("\u22121850.50")).toBe(-185050); // a typographic minus too
+    expect(parseBalance("  -0  ")).toBe(0);
+  });
+  it("still rejects what is not a clear amount", () => {
+    for (const bad of ["", "abc", "--5", "- 5x", "12.345.6", "1234,567", "8500.555", "+5"]) expect(parseBalance(bad)).toBeNull();
+  });
+  it("round-trips through the edit form, including negatives", () => {
+    for (const minor of [0, 1, -1, 850050, -185000, -185050]) expect(parseBalance(minorToInput(minor))).toBe(minor);
+  });
+  it("leaves parseAmount strict: zero and negatives are not spending amounts", () => {
+    expect(parseAmount("0")).toBeNull();
+    expect(parseAmount("-5")).toBeNull();
   });
 });

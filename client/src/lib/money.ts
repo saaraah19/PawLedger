@@ -4,11 +4,12 @@
 const FACTOR = 100;
 
 /**
+ * (non-negative; the public parsers below decide about zero and signs)
  * "8500", "8 500", "8,500", "8500.5", "1.234,56" → minor units. Returns null unless it is clearly an amount.
  * A lone "," or "." followed by exactly three digits after a 1–3 digit group ("8,500", "1.234.567") is read
  * as thousands grouping; anything else with a separator must be a decimal with at most 2 digits.
  */
-export function parseAmount(raw: string): number | null {
+function parseMinor(raw: string): number | null {
   let s = raw.replace(/[\s\u00a0]/g, "");
   if (!/^[\d.,]+$/.test(s)) return null;
   const grouped = (str: string, sep: string) => new RegExp(`^\\d{1,3}(\\${sep}\\d{3})+$`).test(str);
@@ -31,7 +32,22 @@ export function parseAmount(raw: string): number | null {
   if (!/^\d+(\.\d{1,2})?$/.test(s)) return null;
   const [whole, frac = ""] = s.split(".");
   const minor = Number(whole) * FACTOR + Number((frac + "00").slice(0, 2));
-  return Number.isSafeInteger(minor) && minor > 0 ? minor : null;
+  return Number.isSafeInteger(minor) && minor >= 0 ? minor : null;
+}
+
+/** A spending or income amount: more than zero. */
+export function parseAmount(raw: string): number | null {
+  const m = parseMinor(raw);
+  return m !== null && m > 0 ? m : null;
+}
+
+/** An account balance: zero is fine, and a leading minus means an overdraft or a debt. */
+export function parseBalance(raw: string): number | null {
+  const t = raw.trim();
+  const negative = /^[-\u2212]/.test(t);
+  const m = parseMinor(negative ? t.slice(1) : t);
+  if (m === null) return null;
+  return negative && m > 0 ? -m : m;
 }
 
 /** 850000 → "8,500"; 850050 → "8,500.50". Digits only, for tables where the currency is stated once. */

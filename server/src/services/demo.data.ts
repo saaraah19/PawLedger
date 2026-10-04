@@ -1,4 +1,5 @@
 import { lastDayOf, shiftMonth } from "./analytics.range";
+import { bucketEntries } from "./inventory.logic";
 
 export type DemoCategory = { key: string; name: string; kind: "expense" | "income"; parentKey?: string };
 export type DemoTransaction = {
@@ -120,4 +121,60 @@ export function categoriesToKeep(demoCats: { id: string; parentId?: string }[], 
   const keep = new Set([...realUsed, ...realChildParents].filter((id) => isDemo.has(id)));
   for (const c of demoCats) if (keep.has(c.id) && c.parentId) keep.add(c.parentId);
   return keep;
+}
+
+// ---------------------------------------------------------------- accounts, inventories and plans
+export type DemoAccount = { key: string; name: string; kind: "cash" | "bank" | "savings"; target?: number };
+export type DemoInventory = { month: string; asOf: string; notes?: string; balances: { accountKey: string; amount: number }[] };
+export type DemoPlan = {
+  month: string; expectedSpending: number; expectedIncome?: number; expectedSaving?: number; notes?: string;
+  categories?: { categoryKey: string; amount: number }[];
+};
+
+export const DEMO_ACCOUNTS: DemoAccount[] = [
+  { key: "cash", name: "Cash", kind: "cash" },
+  { key: "bank", name: "Bank account", kind: "bank" },
+  { key: "savings", name: "Savings", kind: "savings", target: 10_000_000 }, // 100,000 DZD
+];
+
+/** Money that moved without an entry in each of the four closed months (minor units): the example for "unaccounted for". */
+export const DEMO_UNEXPLAINED = [-185_000, -40_000, 0, -230_000];
+const SAVED_PER_MONTH = 800_000;
+
+/**
+ * Five inventories (the starts of the last five months, each counted at the end of the month before) whose balances follow
+ * from the example entries: bank moves with income and spending less what went to savings, savings gains a fixed amount,
+ * and cash absorbs the "unaccounted" amounts. Plus a plan for each of the last four months.
+ */
+export function buildDemoPlanning(today: string, transactions: DemoTransaction[]) {
+  const currentMonth = today.slice(0, 7);
+  const keys = [-4, -3, -2, -1, 0].map((o) => shiftMonth(currentMonth, o));
+  const asOfs = keys.map((k) => {
+    const prev = shiftMonth(k, -1);
+    return `${prev}-${String(lastDayOf(prev)).padStart(2, "0")}`;
+  });
+  const buckets = bucketEntries(transactions, asOfs);
+
+  let cash = 1_200_000, bank = 6_000_000, savings = 3_500_000;
+  const at = (i: number): DemoInventory => ({
+    month: keys[i], asOf: asOfs[i],
+    ...(i === 4 && { notes: "Counted the cash drawer too." }),
+    balances: [{ accountKey: "cash", amount: cash }, { accountKey: "bank", amount: bank }, { accountKey: "savings", amount: savings }],
+  });
+  const inventories = [at(0)];
+  for (let i = 1; i < keys.length; i++) {
+    const b = buckets[i - 1];
+    cash += DEMO_UNEXPLAINED[i - 1];
+    savings += SAVED_PER_MONTH;
+    bank += b.income - b.expenses - SAVED_PER_MONTH;
+    inventories.push(at(i));
+  }
+
+  const plans: DemoPlan[] = [-3, -2, -1, 0].map((o, idx) => {
+    const plan: DemoPlan = { month: shiftMonth(currentMonth, o), expectedSpending: [3_000_000, 2_800_000, 2_600_000, 3_000_000][idx], expectedIncome: 4_000_000, expectedSaving: SAVED_PER_MONTH };
+    if (o === -1) plan.categories = [{ categoryKey: "groceries", amount: 1_100_000 }, { categoryKey: "hiking", amount: 500_000 }, { categoryKey: "education", amount: 300_000 }];
+    if (o === 0) plan.categories = [{ categoryKey: "groceries", amount: 1_100_000 }, { categoryKey: "hiking", amount: 1_000_000 }, { categoryKey: "eating-out", amount: 400_000 }, { categoryKey: "education", amount: 500_000 }];
+    return plan;
+  });
+  return { accounts: DEMO_ACCOUNTS, inventories, plans };
 }

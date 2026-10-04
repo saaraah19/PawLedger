@@ -89,3 +89,28 @@ export function CategoryTrendChart({ name, months, currency }: {
     </div>
   );
 }
+
+/** What you held at each inventory: the total, and the part of it in savings. */
+export function BalanceChart({ points, currency }: { points: { month: string; total: number; savings: number }[]; currency: string }) {
+  const animate = !useReducedMotion();
+  const showYear = spansYears(points.map((p) => p.month));
+  const data = points.map((p) => ({ ...p, label: shortMonthLabel(p.month, showYear) }));
+  return (
+    <div>
+      <div role="img" aria-label="What you held at each inventory, in total and in savings" className="h-56 w-full">
+        <ResponsiveContainer>
+          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+            <CartesianGrid stroke={RULE} strokeDasharray="2 4" vertical={false} />
+            <XAxis dataKey="label" tick={axis} tickLine={false} axisLine={{ stroke: RULE }} interval={data.length <= 8 ? 0 : "equidistantPreserveStart"} minTickGap={14} />
+            <YAxis tick={axis} tickLine={false} axisLine={false} width={48} tickFormatter={formatCompact} allowDecimals={false} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => formatMoney(v, currency)} />
+            <Legend iconType="square" wrapperStyle={{ fontSize: 13 }} />
+            <Line type="monotone" dataKey="total" name="Total" stroke={INK} strokeWidth={2} dot={{ r: 3, fill: INK }} isAnimationActive={animate} />
+            <Line type="monotone" dataKey="savings" name="Savings" stroke={MOSS} strokeWidth={2} dot={{ r: 3, fill: MOSS }} isAnimationActive={animate} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <DataTable caption="What you held at each inventory" head={["Start of", "Total", "Savings"]} rows={points.map((p) => [p.month, formatMoney(p.total, currency), formatMoney(p.savings, currency)])} />
+    </div>
+  );
+}

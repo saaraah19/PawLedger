@@ -150,3 +150,39 @@ describe("determinism", () => {
     expect(buildObservations(i)).toEqual(buildObservations(i));
   });
 });
+
+describe("plan rules", () => {
+  const plan = (over: Record<string, unknown> = {}) => ({ expectedSpending: 150000, categories: [] as { categoryId: string; name: string; expected: number; actual: number }[], ...over });
+  const running = { state: "current" as const, elapsedShare: 0.5 };
+
+  it("always sets spending against the plan when there is one, and says how far through the month it is", () => {
+    const o = find(input({ plan: plan(), monthState: running }), "plan_spending");
+    expect(o).toMatchObject({ expected: 150000, actual: 100000, isCurrent: true, elapsedShare: 0.5 });
+    expect(o.usedShare).toBeCloseTo(2 / 3);
+  });
+  it("treats a finished month as finished", () => {
+    expect(find(input({ plan: plan(), monthState: { state: "past", elapsedShare: 1 } }), "plan_spending")).toMatchObject({ isCurrent: false, elapsedShare: 1 });
+  });
+  it("says nothing about a plan when none was set", () => {
+    const k = kinds(input());
+    expect(k).not.toContain("plan_spending");
+    expect(k).not.toContain("plan_category");
+  });
+  it("comes first, ahead of the other observations", () => {
+    expect(kinds(input({ plan: plan(), monthState: running }))[0]).toBe("plan_spending");
+  });
+  it("names the planned category that is furthest past its expectation, and nothing when all are within", () => {
+    const lines = [
+      { categoryId: "a", name: "Hiking", expected: 10000, actual: 15600 },
+      { categoryId: "b", name: "Groceries", expected: 11000, actual: 12000 },
+      { categoryId: "c", name: "Education", expected: 5000, actual: 4500 },
+    ];
+    expect(find(input({ plan: plan({ categories: lines }), monthState: running }), "plan_category")).toMatchObject({ name: "Hiking", expected: 10000, actual: 15600 });
+    expect(kinds(input({ plan: plan({ categories: lines.slice(2) }), monthState: running }))).not.toContain("plan_category");
+    expect(kinds(input({ plan: plan({ categories: [{ categoryId: "z", name: "Exactly", expected: 100, actual: 100 }] }), monthState: running }))).not.toContain("plan_category");
+  });
+  it("stays silent, like every other observation, when there are too few expenses to say anything", () => {
+    const sparse = input({ plan: plan(), monthState: running, current: { expenses: { total: 5000, count: RULES.minExpenses - 1 }, largest: [], categories: [] } });
+    expect(buildObservations(sparse)).toEqual([]);
+  });
+});

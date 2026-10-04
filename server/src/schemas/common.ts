@@ -10,3 +10,12 @@ export const calendarDay = z
     const d = new Date(`${s}T12:00:00Z`);
     return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
   }, "That date doesn't exist");
+
+/** Trimmed optional text; blank becomes undefined. */
+export const optText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, `Keep this under ${max} characters`)
+    .optional()
+    .transform((s) => (s ? s : undefined));

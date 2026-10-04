@@ -101,3 +101,46 @@ describe("example data", () => {
     await request(app).get("/api/demo").expect(401);
   });
 });
+
+describe("example data: accounts, inventories and plans", () => {
+  it("loads five inventories that reconcile to the designed amounts, and plans that review", async () => {
+    const a = await signedIn("dp1@example.com");
+    await a.post("/api/demo").expect(201);
+    const o = (await a.get("/api/inventories/overview")).body;
+    expect(o.accounts).toHaveLength(3);
+    expect(o.inventories).toHaveLength(5);
+    expect(o.periods.map((p: { unexplained: number }) => p.unexplained)).toEqual([-185_000, -40_000, 0, -230_000]);
+    const v = (await a.get("/api/plans")).body;
+    expect(v.plan).not.toBeNull();
+    expect(v.review.spending.actual).toBeGreaterThan(0);
+    expect(v.history.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("refuses to load once the person has a plan or an inventory of their own", async () => {
+    const a = await signedIn("dp2@example.com");
+    await a.put("/api/plans/2026-09").send({ expectedSpending: 1000 }).expect(200);
+    await a.post("/api/demo").expect(409);
+  });
+
+  it("removes example inventories, plans and accounts; an account a real inventory counts stays, as the person's own", async () => {
+    const a = await signedIn("dp3@example.com");
+    await a.post("/api/demo").expect(201);
+    const bank = (await a.get("/api/accounts")).body.accounts.find((x: { name: string }) => x.name === "Bank account").id;
+    await a.post("/api/inventories").send({ asOf: "2025-01-31", balances: [{ accountId: bank, amount: 5000 }] }).expect(201); // the person's own count
+    await a.delete("/api/demo").expect(200);
+    const o = (await a.get("/api/inventories/overview")).body;
+    expect(o.inventories).toHaveLength(1);
+    expect(o.accounts.map((x: { name: string }) => x.name)).toEqual(["Bank account"]);
+    expect(o.accounts[0].demo).toBe(false);
+    expect((await a.get("/api/plans")).body.plan).toBeNull();
+  });
+
+  it("keeps an example category that a real plan uses", async () => {
+    const a = await signedIn("dp4@example.com");
+    await a.post("/api/demo").expect(201);
+    const food = (await a.get("/api/categories")).body.categories.find((c: { name: string }) => c.name === "Groceries").id;
+    await a.put("/api/plans/2030-01").send({ expectedSpending: 5000, categories: [{ categoryId: food, amount: 1000 }] }).expect(200); // saving a plan makes it the person's own
+    await a.delete("/api/demo").expect(200);
+    expect((await a.get("/api/categories")).body.categories.map((c: { name: string }) => c.name)).toEqual(["Groceries"]);
+  });
+});

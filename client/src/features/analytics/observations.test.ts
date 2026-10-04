@@ -19,6 +19,9 @@ const all: Observation[] = [
   { kind: "spending_types", necessity: 300000, optional: 500000, impulse: 100000, classifiedShare: 0.8 },
   { kind: "spending_types", necessity: 500000, optional: 300000, impulse: 0, classifiedShare: 0.8 },
   { kind: "category_count", categoryId: "h", name: "Hiking", count: 4, total: 1560000 },
+  { kind: "plan_spending", expected: 3000000, actual: 2745000, usedShare: 0.915, isCurrent: true, elapsedShare: 0.9667 },
+  { kind: "plan_spending", expected: 3000000, actual: 2950000, usedShare: 0.9833, isCurrent: false, elapsedShare: 1 },
+  { kind: "plan_category", categoryId: "h", name: "Hiking", expected: 1000000, actual: 1560000, usedShare: 1.56 },
 ];
 const said = (i: number, ctx = now) => describeObservation(all[i], ctx);
 
@@ -50,6 +53,11 @@ describe("describeObservation", () => {
     expect(said(8)).toBe("Among purchases with a spending type, you spent more on optional ones than on necessities this month: 5,000 DZD against 3,000 DZD. Impulse / unplanned purchases were 1,000 DZD of the optional spending.");
     expect(said(9)).toBe("Among purchases with a spending type, necessities were the larger part this month: 5,000 DZD against 3,000 DZD for optional purchases.");
     expect(said(10)).toBe("You made 4 purchases in Hiking this month, 15,600 DZD in all.");
+  });
+  it("words the plan observations: a running month with how much of it has passed, a finished month, and a category past its expectation", () => {
+    expect(describeObservation(all[all.length - 3], now)).toBe("So far you have spent 27,450 DZD of the 30,000 DZD you expected for this month (92%), with 97% of the month gone.");
+    expect(describeObservation(all[all.length - 2], past)).toBe("You expected to spend 30,000 DZD in September 2026 and spent 29,500 DZD (98% of it).");
+    expect(describeObservation(all[all.length - 1], now)).toBe("Hiking has used 156% of what you expected: 15,600 DZD against 10,000 DZD.");
   });
   it("only ever reports; it never advises, blames or praises", () => {
     const text = all.flatMap((_, i) => [said(i), said(i, past)]).join(" ");

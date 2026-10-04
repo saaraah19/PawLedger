@@ -4,9 +4,9 @@ import mongoose from "mongoose";
 async function main() {
   console.log("PawLedger doctor\n");
 
-  let env: typeof import("../config/env").env;
+  let env: typeof import("../config/env.js").env;
   try {
-    env = (await import("../config/env")).env;
+    env = (await import("../config/env.js")).env;
     console.log("  ok    server/.env is complete");
   } catch (err) {
     console.log(`  FAIL  ${err instanceof Error ? err.message : err}`);

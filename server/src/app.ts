@@ -7,6 +7,7 @@ import helmet from "helmet";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/error";
 import { analyticsRoutes } from "./routes/analytics";
+import { accountRoutes, inventoryRoutes, planRoutes } from "./routes/planning";
 import { authRoutes } from "./routes/auth";
 import { categoryRoutes } from "./routes/categories";
 import { demoRoutes } from "./routes/demo";
@@ -32,6 +33,9 @@ app.get("/api/health", (_req, res) => {
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/accounts", accountRoutes);
+app.use("/api/inventories", inventoryRoutes);
+app.use("/api/plans", planRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/demo", demoRoutes);
 app.use("/api/settings", settingsRoutes);

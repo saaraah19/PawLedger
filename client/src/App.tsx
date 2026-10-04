@@ -10,8 +10,11 @@ import { Compare } from "./pages/Compare";
 import { History } from "./pages/History";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
+import { Plan } from "./pages/Plan";
 
 const Analyze = lazy(() => import("./pages/Analyze").then((m) => ({ default: m.Analyze })));
+
+const Inventory = lazy(() => import("./pages/Inventory").then((m) => ({ default: m.Inventory })));
 
 function Protected() {
   const { user, loading, unavailable, retry } = useAuth();
@@ -34,6 +37,8 @@ export default function App() {
           <Route path="history" element={<History />} />
           <Route path="analyze" element={<Suspense fallback={<p className="text-stone">Opening Analyze…</p>}><Analyze /></Suspense>} />
           <Route path="compare" element={<Compare />} />
+          <Route path="plan" element={<Plan />} />
+          <Route path="inventory" element={<Suspense fallback={<p className="text-stone">Opening Inventory{"\u2026"}</p>}><Inventory /></Suspense>} />
           <Route path="categories" element={<Categories />} />
           <Route path="settings" element={<Settings />} />
         </Route>

@@ -90,7 +90,9 @@ export type Observation =
   | { kind: "category_increase"; categoryId: string; name: string; current: number; previous: number; change: number; changePct: number | null; comparedWith: ComparedWith }
   | { kind: "largest_share"; total: number; expensesTotal: number; share: number }
   | { kind: "spending_types"; necessity: number; optional: number; impulse: number; classifiedShare: number }
-  | { kind: "category_count"; categoryId: string; name: string; count: number; total: number };
+  | { kind: "category_count"; categoryId: string; name: string; count: number; total: number }
+  | { kind: "plan_spending"; expected: number; actual: number; usedShare: number; isCurrent: boolean; elapsedShare: number }
+  | { kind: "plan_category"; categoryId: string; name: string; expected: number; actual: number; usedShare: number };
 export type Observations = { month: string; currentMonth: string; expenseCount: number; comparedWith: ComparedWith; observations: Observation[] };
 
 export const getObservations = (month?: string) => api<Observations>(`/analytics/observations${month ? `?month=${month}` : ""}`);

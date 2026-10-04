@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { Category } from "../models/Category";
+import { Plan } from "../models/Plan";
 import { Transaction } from "../models/Transaction";
 import { User } from "../models/User";
 import { ComparisonQuery, MonthsQuery, ObservationsQuery, TrendQuery } from "../schemas/analytics.schema";
@@ -9,6 +10,7 @@ import { buildObservations } from "./analytics.observations";
 import { fillMonths, lastDayOf, monthBounds, monthsBetween, resolveMonthRange, resolveRange, shiftMonth, todayIn } from "./analytics.range";
 import { getSummary } from "./analytics.service";
 import { rollupByCategory } from "./analytics.rollup";
+import { categoryActual, monthProgress } from "./plan.logic";
 
 async function rangeFor(userId: string, q: MonthsQuery) {
   const user = await User.findById(userId).select("timezone");
@@ -167,12 +169,15 @@ export async function getObservations(userId: string, q: ObservationsQuery) {
   const trailingStart = shiftMonth(month, -6);
   const seriesFrom = yearStart < trailingStart ? yearStart : trailingStart;
 
-  const [cur, prev, breakdown, series] = await Promise.all([
+  const [cur, prev, breakdown, series, plan, cats] = await Promise.all([
     getSummary(userId, { month }),
     getSummary(userId, { from: comparedWith.from, to: comparedWith.to }),
     getBreakdown(userId, { from: month, to: month }),
     getMonthly(userId, { from: seriesFrom, to: month }),
+    Plan.findOne({ userId, month }).lean(),
+    Category.find({ userId }).select("name").lean(),
   ]);
+  const names = new Map(cats.map((c) => [String(c._id), c.name]));
 
   return {
     month,
@@ -186,6 +191,16 @@ export async function getObservations(userId: string, q: ObservationsQuery) {
       previous: { expenses: prev.expenses, categories: prev.categories },
       spendingTypes: breakdown.spendingTypes,
       months: series.months.map((m) => ({ month: m.month, expenses: m.expenses })),
+      monthState: monthProgress(month, todayIn(tz)),
+      plan: plan
+        ? {
+            expectedSpending: plan.expectedSpending,
+            categories: (plan.categories ?? []).map((c) => ({
+              categoryId: String(c.categoryId), name: names.get(String(c.categoryId)) ?? "Unknown category",
+              expected: c.amount, actual: categoryActual(cur.categories, String(c.categoryId)).total,
+            })),
+          }
+        : null,
     }),
   };
 }

@@ -7,6 +7,7 @@ import { monthLabel, shiftMonth } from "../features/analytics/months";
 import { describeObservation } from "../features/analytics/observations";
 import { SpendingByArea } from "../features/analytics/SpendingByArea";
 import { ExampleBanner } from "../features/onboarding/ExampleData";
+import { InventoryPromptBanner, PlanSummary } from "../features/planning/HomePlanning";
 import { useTitle } from "../lib/useTitle";
 import { useCategories } from "../features/categories/CategoriesContext";
 import { categoryLabel } from "../features/categories/tree";
@@ -82,6 +83,8 @@ export function Home() {
       </div>
 
       <ExampleBanner />
+      <InventoryPromptBanner />
+      <PlanSummary month={month} currency={currency} />
 
       {error && (
         <p role="alert" className="mt-8 border-l-2 border-ochre pl-3 text-sm">

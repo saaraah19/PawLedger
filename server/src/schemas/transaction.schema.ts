@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SPENDING_TYPES } from "../models/Transaction";
-import { calendarDay, objectId } from "./common";
+import { calendarDay, objectId, optText } from "./common";
 
 const MAX_AMOUNT = 1_000_000_000_000; // minor units
 
@@ -9,14 +9,6 @@ const minor = z
   .int("Amounts must be whole minor units")
   .positive("Amount must be more than zero")
   .max(MAX_AMOUNT, "That amount is too large");
-
-const optText = (max: number) =>
-  z
-    .string()
-    .trim()
-    .max(max, `Keep this under ${max} characters`)
-    .optional()
-    .transform((s) => (s ? s : undefined));
 
 // "YYYY-MM-DD" → noon UTC of that calendar day.
 const dateOnly = calendarDay.transform((s) => new Date(`${s}T12:00:00Z`));

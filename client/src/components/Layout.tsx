@@ -8,6 +8,8 @@ const links = [
   ["/history", "History"],
   ["/analyze", "Analyze"],
   ["/compare", "Compare"],
+  ["/plan", "Plan"],
+  ["/inventory", "Inventory"],
   ["/categories", "Categories"],
   ["/settings", "Settings"],
 ] as const;
