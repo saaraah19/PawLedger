@@ -5,6 +5,9 @@ services:
     name: pawledger
     runtime: node
     plan: free
+    # A service's region can't be changed once it exists. Pick the one closest to your Atlas cluster, then
+    # remove the leading "#" (valid values include oregon, ohio, virginia, frankfurt and singapore).
+    # region: frankfurt
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -16,7 +19,7 @@ services:
       - key: SERVE_CLIENT
         value: "true"
       - key: ALLOW_REGISTRATION
-        value: "true" # set to "false" after you have created your account
+        value: "true" # use "false" from the start if your account already exists in this database
       - key: JWT_SECRET
         generateValue: true
       - key: MONGODB_URI
