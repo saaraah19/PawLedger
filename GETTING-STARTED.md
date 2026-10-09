@@ -209,6 +209,8 @@ Then stop `npm run dev` (`Ctrl+C`) and start it again. The sign-in page no longe
 
 *Why:* accounts are fully separate, so a stranger could never see your data, but they could still use your database and your hosting allowance. One person means one account.
 
+*What a stranger sees:* anyone who opens your link lands on the sign-in page, which says plainly that this is a private, one-person ledger and that they can simply close the page. The app also asks search engines and web archives not to list it (`robots.txt`, a `noindex` tag and an `X-Robots-Tag` header). That last part is a polite request, not a lock: the real protection is the sign-in plus closed registration.
+
 ---
 
 ## 9. Explore it: a ten-minute guided walk
@@ -286,6 +288,21 @@ One service serves both the app and the API, so there are no cookie or cross-sit
 
 6. **On your phone:** open the same address and bookmark it, or use your browser's *Add to Home Screen*.
 
+**If you created the Render service by hand instead of with the Blueprint,** do not copy your local `.env` across: it says `SERVE_CLIENT=false` (right for `npm run dev`, wrong online), and its other values are for your computer. Set exactly these, in the service's **Settings** and **Environment** tabs:
+
+| Where | Name | Value |
+|---|---|---|
+| Settings | Build Command | `npm install --include=dev && npm run build` |
+| Settings | Start Command | `npm start` |
+| Environment | `SERVE_CLIENT` | `true` |
+| Environment | `NODE_ENV` | `production` |
+| Environment | `NODE_VERSION` | `22` |
+| Environment | `ALLOW_REGISTRATION` | `false` once your account exists (`true` only while creating it) |
+| Environment | `MONGODB_URI` | your Atlas string, no `< >` brackets |
+| Environment | `JWT_SECRET` | any random string of 32 or more characters |
+
+*Why the build command matters:* with `NODE_ENV=production`, npm skips the development packages by default, and the build needs TypeScript and Vite. `--include=dev` brings them back for the build only. Change the build command **before or together with** adding `NODE_ENV`, never after. `PORT` can be left unset: Render supplies one.
+
 **Know this about the free plan.** A free service goes to sleep when nobody has used it for a while, and the next visit takes about a minute to wake it. The Atlas free tier has no automatic backups, so read [Backups](#12-backups) too. I could not check Render's current free-plan limits; its pricing page has them.
 
 ---
@@ -359,6 +376,7 @@ Start with `npm run doctor`; it names the problem in most cases.
 | `Port 4000` or `5173` already in use | Another program has it | Stop it, or change `PORT` in `server/.env`. |
 | The Render deploy fails and its log ends with `Failed to start` | The database could not be reached from Render | Atlas → Network Access must allow Render (step 10.3) and show **Active**; `MONGODB_URI` in Render's Environment tab must be the string without `< >` brackets. Render's log repeats the hint. |
 | The Render build fails (the log shows `npm` or `tsc` errors) | A dependency or build problem | Open the build log and send me the first error line. A build that dies with `exit code 137` or *out of memory* means the free plan ran out of memory. |
+| The Render address shows `{"message":"PawLedger's server is running, but it isn't serving the web app…"}` (older versions: `That endpoint doesn't exist`) | The server is fine, but `SERVE_CLIENT` is not `true` | Environment tab → `SERVE_CLIENT` = `true` → save, and let it redeploy. |
 | On Render you are signed out immediately | Not on the `https://` address, or `SERVE_CLIENT` is not `true` | Use the `https://` address; check the Environment tab. |
 
 ---
@@ -366,6 +384,7 @@ Start with `npm run doctor`; it names the problem in most cases.
 ## 14. Security checklist
 
 - [ ] `ALLOW_REGISTRATION` is `false` once your account exists.
+- [ ] Remember that "not listed by search engines" is not the same as "locked": the sign-in is what keeps people out.
 - [ ] Your password is long and unique, kept in a password manager.
 - [ ] `server/.env` is **not** in any repository or shared folder (`git status` does not list it).
 - [ ] The database password is long and random, especially if Atlas allows access from anywhere.

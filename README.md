@@ -56,6 +56,10 @@ Details and a worked example are in GETTING-STARTED.md, under "Your monthly rhyt
 
 The client reads one optional variable, `VITE_API_URL` (see `client/.env.example`), for a separately hosted API.
 
+## Private by design
+
+The sign-in page tells visitors that this is a private, one-person app (the wording is in `client/src/features/auth/privateNotice.ts`). The app also sends `noindex, nofollow, noarchive` (meta tag and `X-Robots-Tag` header) and serves `robots.txt` with `Disallow: /`. These only ask crawlers to stay away; access control is the sign-in plus `ALLOW_REGISTRATION=false`.
+
 ## Deploying
 
 `render.yaml` describes a single Render web service (build, start, health check, generated secret). Steps, the Atlas network-access trade-off, and closing registration afterwards are in GETTING-STARTED.md, step 10.

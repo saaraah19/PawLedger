@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Paw } from "../components/Paw";
 import { useAuth } from "../features/auth/AuthContext";
+import { privateNotice } from "../features/auth/privateNotice";
 import { api, ApiError } from "../lib/api";
 import { useTitle } from "../lib/useTitle";
 
@@ -44,6 +45,12 @@ export function Login() {
         <span className="font-display text-3xl font-bold tracking-tight text-ink">PawLedger</span>
       </div>
       <p className="mt-2 text-stone">Your money, leaving a trail.</p>
+
+      <div role="note" className="mt-6 border border-rule bg-white/40 p-4 text-sm leading-relaxed">
+        <p>
+          <strong className="font-semibold">{privateNotice(registrationOpen).lead}</strong> {privateNotice(registrationOpen).body}
+        </p>
+      </div>
 
       {unavailable && (
         <div role="alert" className="mt-8 border-l-2 border-ochre pl-3 text-sm">
@@ -94,7 +101,6 @@ export function Login() {
           {mode === "in" ? "Create the first account" : "I already have an account"}
         </button>
       )}
-      {registrationOpen === false && <p className="mt-6 text-sm text-stone">This ledger is private. New accounts can't be created here.</p>}
     </div>
   );
 }

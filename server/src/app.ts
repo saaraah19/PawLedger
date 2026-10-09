@@ -25,6 +25,11 @@ app.use(
   }),
 );
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+// A private app: ask search engines and web archives not to list or copy any of it.
+app.use((_req, res, next) => {
+  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+  next();
+});
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
 
@@ -70,6 +75,15 @@ if (env.SERVE_CLIENT) {
     console.warn(`SERVE_CLIENT is on but ${index} was not found. Run "npm run build" first.`);
   }
 }
+
+// The bare address when the web app isn't being served here: say what is going on, instead of a bare "doesn't exist".
+app.get("/", (_req, res) => {
+  res.status(404).json({
+    message: env.SERVE_CLIENT
+      ? "PawLedger's server is running, but the web app hasn't been built here. Run npm run build, then start the server again."
+      : "PawLedger's server is running, but it isn't serving the web app. In development, open http://localhost:5173. On a host such as Render, set SERVE_CLIENT=true and redeploy.",
+  });
+});
 
 app.use((_req, res) => {
   res.status(404).json({ message: "That endpoint doesn't exist." });

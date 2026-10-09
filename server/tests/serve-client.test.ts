@@ -10,6 +10,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pawledger-dist-"));
 beforeAll(async () => {
   fs.mkdirSync(path.join(dir, "assets"));
   fs.writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>PawLedger</title><div id=root></div>");
+  fs.writeFileSync(path.join(dir, "robots.txt"), "User-agent: *\nDisallow: /\n");
   fs.writeFileSync(path.join(dir, "assets", "app-abc123.js"), "console.log('hi')");
   vi.stubEnv("SERVE_CLIENT", "true");
   vi.stubEnv("CLIENT_DIST", dir);
@@ -49,5 +50,13 @@ describe("single-service mode", () => {
     const csp = String((await request(app).get("/")).headers["content-security-policy"]);
     expect(csp).toContain("default-src 'self'");
     expect(csp).not.toContain("upgrade-insecure-requests");
+  });
+  it("asks crawlers to stay out: robots.txt, and a noindex header on every kind of response", async () => {
+    const r = await request(app).get("/robots.txt").expect(200);
+    expect(r.headers["content-type"]).toMatch(/text\/plain/);
+    expect(r.text).toContain("Disallow: /");
+    for (const url of ["/robots.txt", "/", "/history", "/api/health"]) {
+      expect((await request(app).get(url)).headers["x-robots-tag"]).toBe("noindex, nofollow, noarchive");
+    }
   });
 });
