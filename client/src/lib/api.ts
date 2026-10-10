@@ -18,11 +18,11 @@ export class ApiError extends Error {
 
 export async function api<T = unknown>(
   path: string,
-  opts: { method?: string; body?: unknown } = {},
+  opts: { method?: string; body?: unknown; timeoutMs?: number } = {},
 ): Promise<T> {
   // Never wait forever: a request that gets no answer fails with a message that says what to check.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? TIMEOUT_MS);
   let res: Response;
   try {
     res = await fetch(BASE + path, {

@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { api, ApiError, setUnauthorizedHandler } from "../../lib/api";
+import { retryWhileWaking, unavailableMessage, WAKE_REQUEST_MS } from "../../lib/wake";
 
 export type User = { id: string; email: string; currency: string; timezone: string; onboarded: boolean };
 
@@ -30,12 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const load = () => {
     setLoading(true);
     setUnavailable(null);
-    api<{ user: User }>("/auth/me")
+    // A hosted server may be asleep: keep asking for a while (the loading screen explains the wait) before giving up.
+    retryWhileWaking(() => api<{ user: User }>("/auth/me", { timeoutMs: WAKE_REQUEST_MS }))
       .then((r) => setUser(r.user))
       .catch((e) => {
         setUser(null);
         // 401 just means "not signed in". Anything else means the server or database isn't answering.
-        if (!(e instanceof ApiError && e.status === 401)) setUnavailable(e instanceof ApiError ? e.message : "The server isn't answering.");
+        if (!(e instanceof ApiError && e.status === 401)) setUnavailable(unavailableMessage(e, import.meta.env.PROD));
       })
       .finally(() => setLoading(false));
   };

@@ -1,18 +1,28 @@
 import { useEffect, useState } from "react";
+import { loadingNote } from "../lib/wake";
 
 /** The wait while the app finds out who is signed in. After a few seconds it says what a long wait usually means. */
-export function Loading({ label = "Opening your ledger\u2026" }: { label?: string }) {
-  const [slow, setSlow] = useState(false);
+export function Loading({ label = "Opening your ledger\u2026", hosted = import.meta.env.PROD }: { label?: string; hosted?: boolean }) {
+  const [seconds, setSeconds] = useState(0);
   useEffect(() => {
-    const t = setTimeout(() => setSlow(true), 6000);
-    return () => clearTimeout(t);
+    const t = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(t);
   }, []);
+  const note = loadingNote(seconds, hosted);
   return (
-    <div role="status" className="p-10 text-stone">
-      <p>{label}</p>
-      {slow && (
-        <p className="mt-3 max-w-md text-sm leading-relaxed">
-          Still trying. If this keeps going, the server or the database may not be running. Check the terminal where you started PawLedger.
+    <div className="p-10 text-stone">
+      <div role="status">
+        <p>{label}</p>
+        {note && (
+          <>
+            <p className="mt-4 font-medium text-ink">{note.title}</p>
+            <p className="mt-1 max-w-md text-sm leading-relaxed">{note.detail}</p>
+          </>
+        )}
+      </div>
+      {note && hosted && (
+        <p aria-hidden="true" className="mt-4 text-xs tabular-nums">
+          Waiting {seconds} s
         </p>
       )}
     </div>

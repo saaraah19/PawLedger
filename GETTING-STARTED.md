@@ -303,7 +303,7 @@ One service serves both the app and the API, so there are no cookie or cross-sit
 
 *Why the build command matters:* with `NODE_ENV=production`, npm skips the development packages by default, and the build needs TypeScript and Vite. `--include=dev` brings them back for the build only. Change the build command **before or together with** adding `NODE_ENV`, never after. `PORT` can be left unset: Render supplies one.
 
-**Know this about the free plan.** A free service goes to sleep when nobody has used it for a while, and the next visit takes about a minute to wake it. The Atlas free tier has no automatic backups, so read [Backups](#12-backups) too. I could not check Render's current free-plan limits; its pricing page has them.
+**Know this about the free plan.** A free service goes to sleep when nobody has used it for a while, and the next visit takes about a minute to wake it. If a PawLedger tab is already open, it shows *The server is waking up* and opens by itself; if you type the address into a fresh tab, Render may show its own waiting page first, because your page is served by the same sleeping service. Keeping it awake needs a pinger or a paid plan. The Atlas free tier has no automatic backups, so read [Backups](#12-backups) too. I could not check Render's current free-plan limits; its pricing page has them.
 
 ---
 
@@ -375,6 +375,7 @@ Start with `npm run doctor`; it names the problem in most cases.
 | The example-data button is missing or refused | You already have your own entries | By design: example data never mixes with real records. |
 | `Port 4000` or `5173` already in use | Another program has it | Stop it, or change `PORT` in `server/.env`. |
 | The Render deploy fails and its log ends with `Failed to start` | The database could not be reached from Render | Atlas → Network Access must allow Render (step 10.3) and show **Active**; `MONGODB_URI` in Render's Environment tab must be the string without `< >` brackets. Render's log repeats the hint. |
+| *The server is waking up* stays for minutes, then *The server didn't wake up in time* | Free service waking slowly, or it is failing to start | Press *Try again*. If it repeats, open the service on Render, read the **Logs** tab, and send me the last lines. |
 | The Render build fails (the log shows `npm` or `tsc` errors) | A dependency or build problem | Open the build log and send me the first error line. A build that dies with `exit code 137` or *out of memory* means the free plan ran out of memory. |
 | The Render address shows `{"message":"PawLedger's server is running, but it isn't serving the web app…"}` (older versions: `That endpoint doesn't exist`) | The server is fine, but `SERVE_CLIENT` is not `true` | Environment tab → `SERVE_CLIENT` = `true` → save, and let it redeploy. |
 | On Render you are signed out immediately | Not on the `https://` address, or `SERVE_CLIENT` is not `true` | Use the `https://` address; check the Environment tab. |

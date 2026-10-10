@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Paw } from "../components/Paw";
+import { Loading } from "../components/StatusScreens";
 import { useAuth } from "../features/auth/AuthContext";
 import { privateNotice } from "../features/auth/privateNotice";
 import { api, ApiError } from "../lib/api";
@@ -8,7 +9,7 @@ import { useTitle } from "../lib/useTitle";
 
 export function Login() {
   useTitle("Sign in");
-  const { user, signIn, signUp, expired, unavailable, retry } = useAuth();
+  const { user, loading, signIn, signUp, expired, unavailable, retry } = useAuth();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,10 +18,12 @@ export function Login() {
   const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null); // null until the server has said
 
   useEffect(() => {
+    if (loading) return; // a sleeping server can't answer yet; asking now would wrongly look like "registration is open"
     api<{ registrationOpen: boolean }>("/auth/config").then((c) => setRegistrationOpen(c.registrationOpen)).catch(() => setRegistrationOpen(true));
-  }, []);
+  }, [loading]);
 
   if (user) return <Navigate to="/" replace />;
+  if (loading) return <Loading />;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
