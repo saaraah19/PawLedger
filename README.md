@@ -4,6 +4,97 @@ Your money, leaving a trail.
 
 A private, long-term personal finance observatory: record income and spending, look back over months and years, compare periods, and notice patterns. It observes; it never scolds, scores or advises. Built with MongoDB, Express, React and Node, all in TypeScript. The product philosophy every feature was built against is in `CLAUDE.md`.
 
+## A tour in pictures
+
+Every screenshot below is the running app, filled with its built-in example data (five months of clearly marked, made-up entries). Nothing here is a real person's money.
+
+### A private door
+
+Anyone who follows the link lands on a sign-in page that says plainly that this is one person's ledger, not a public service. When the server is asleep (a free host does that), the app says so and opens by itself once it is awake.
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/showcase/signin.png" width="260" alt="Sign-in page saying this is a private app" /><br /><sub>Sign-in, with registration closed</sub></td>
+    <td align="center" valign="top"><img src="docs/showcase/waking.png" width="260" alt="Loading screen saying the server is waking up" /><br /><sub>While a sleeping server wakes up</sub></td>
+  </tr>
+</table>
+
+### A welcome flow, not a manual
+
+Five short steps on first sign-in: currency and timezone, optional starter categories, then a choice between recording something real or exploring with example data, and a tour of each page. It can be replayed from Settings.
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/showcase/welcome-start.png" width="300" alt="Welcome step: what the app is and what it never does" /><br /><sub>What it is, and what it never does</sub></td>
+    <td align="center" valign="top"><img src="docs/showcase/welcome-categories.png" width="300" alt="Welcome step: choosing starter categories" /><br /><sub>Starter categories, all optional</sub></td>
+    <td align="center" valign="top"><img src="docs/showcase/welcome-first-entries.png" width="300" alt="Welcome step: record something real or load example data" /><br /><sub>Real entry or example data</sub></td>
+  </tr>
+</table>
+
+### Home: what is happening with my money right now
+
+![Home page for October 2026](docs/showcase/home.png)
+
+- The month at a glance: income, spending and net, with the number of transactions and where most of it went.
+- **Against what you expected**: spending shown against the month's plan, with how far through the month you are. A bar that passes the line turns dark, never red.
+- **Things worth noticing**: observations written from your own data ("Your spending increased by 27,450 DZD (178%) compared with the same days of last month"), always labelled as observations, not advice.
+- Where it went, the largest purchases, and the most recent entries.
+
+### Recording and finding entries
+
+Adding an expense needs only what you bought and how much. Category, items, store, spending type and notes sit behind progressive disclosure.
+
+![Add expense dialog](docs/showcase/add-expense.png)
+
+History holds everything, with filters (all, expenses, income, category), sorting and pagination. A purchase with several items shows its items and checks the total.
+
+![History page](docs/showcase/history.png)
+
+### Analyze: patterns over time
+
+Income and spending by month, spending by category, by spending type (necessity, good to have, complementary, impulse), one category's trend over time, where you shop, and the largest purchases, for any period.
+
+![Analyze page](docs/showcase/analyze.png)
+
+### Compare: two periods side by side
+
+Pick two months, or two custom date ranges. It lists what changed in plain sentences, then tables for money in and out and for each category and sub-category.
+
+![Compare page](docs/showcase/compare.png)
+
+### The monthly rhythm: Plan and Inventory
+
+**Plan** is what you expect from a month: spending in total and by category, plus optional income and saving. It is for noticing, not scoring.
+
+![Plan page](docs/showcase/plan.png)
+
+**Inventory** is a count of what you hold in each account at the end of a month. The app sets the change in what you hold against what your entries explain, and shows the difference as "Unaccounted for", in both directions and in plain words. Savings accounts show a target and the arithmetic of the recent pace.
+
+![Inventory page](docs/showcase/inventory.png)
+
+### Categories and settings
+
+Categories are yours: two levels, per kind (expense or income), archived rather than deleted when they have history. Settings hold the currency label, the timezone, example data and the welcome tour.
+
+<table>
+  <tr>
+    <td valign="top"><img src="docs/showcase/categories.png" alt="Categories page" /></td>
+    <td valign="top"><img src="docs/showcase/settings.png" alt="Settings page" /></td>
+  </tr>
+</table>
+
+### On a phone
+
+The layout is designed for small screens too: the navigation wraps, History reads as a list, and the add buttons stay within reach.
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/showcase/mobile-home.png" width="260" alt="Home on a phone" /></td>
+    <td align="center" valign="top"><img src="docs/showcase/mobile-history.png" width="260" alt="History on a phone" /></td>
+    <td align="center" valign="top"><img src="docs/showcase/mobile-add-expense.png" width="260" alt="Add expense on a phone" /></td>
+  </tr>
+</table>
+
 ## Start here
 
 **[GETTING-STARTED.md](GETTING-STARTED.md)** is the guided path: install, database, `npm run setup`, first launch, your account, the in-app welcome flow, a ten-minute walk through every page, putting it online, backups and troubleshooting.
@@ -70,7 +161,7 @@ The sign-in page tells visitors that this is a private, one-person app (the word
 client/    React + TypeScript + Tailwind (pages, features, components, lib)
 server/    Express + TypeScript (routes -> controllers -> services -> models)
 scripts/   setup and close-registration
-docs/      screenshots used in the guide
+docs/      screenshots used in the guide (screenshots/) and in this README (showcase/)
 render.yaml, GETTING-STARTED.md, CLAUDE.md
 ```
 
